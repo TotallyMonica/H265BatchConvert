@@ -4,6 +4,7 @@ from pathlib import Path
 from subprocess import call, check_output, CalledProcessError
 from tqdm import tqdm
 import sys
+import find
 
 def encoders():
     return ("hevc_nvenc", "hevc_amf", "hevc_qsv", "hevc_vaapi", "hevc_v4l2m2m", "hevc_mf", "libx265")
@@ -137,7 +138,8 @@ def simulate(files, src_ext, destructive):
 @click.option('--file-ext', help='File format to process')
 @click.option('--dry-run', is_flag=True, help='Simulate running')
 @click.option('--nondestructive', is_flag=True, help='Save the original files')
-def main(directory, file_ext='mp4,m4a,mkv,ts', recursive=False, dry_run=False, nondestructive=False):
+@click.option('--all-exts', is_flag=True, help='Use all of the extensions in the provided directory')
+def main(directory, file_ext='mp4,m4a,mkv,ts,avi', recursive=False, dry_run=False, nondestructive=False, all_exts=False):
     """ Compress h264 video files in a directory using libx265 codec with crf=28
     Args:
          nondestructive: whether to convert the files nondestructively
@@ -145,6 +147,7 @@ def main(directory, file_ext='mp4,m4a,mkv,ts', recursive=False, dry_run=False, n
          directory: the directory to scan for video files
          file_ext: the file extensions to consider for conversion, comma delimited
          recursive: whether to search directory or all its contents
+         all_exts: get all files in the directory given
     """
 
     print(f"Directory:      {directory}")
@@ -152,8 +155,12 @@ def main(directory, file_ext='mp4,m4a,mkv,ts', recursive=False, dry_run=False, n
     print(f"Recursive:      {recursive}")
     print(f"Dry run:        {dry_run}")
     print(f"Nondestructive: {nondestructive}")
+    print(f"All Extensions: {all_exts}")
 
-    file_exts = file_ext.split(",")
+    if all_exts:
+        file_exts=find.locate(directory)
+    else:
+        file_exts = file_ext.split(",")
 
     for ext in file_exts:
         if recursive:
