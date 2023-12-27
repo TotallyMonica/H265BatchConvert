@@ -13,7 +13,7 @@ def decoders():
 
 def check_dependencies():
     dependencies = ("ffmpeg", "ffprobe")
-    windows_depenencies = ("powershell",)
+    windows_dependencies = ("powershell",)
 
 def delete_file(target: str, dry_run: bool=False):
     command = ''
@@ -42,7 +42,7 @@ def create_file(reference: str, new_file: str, dry_run: bool=False):
 def move_file(source: str, dest: str, dry_run: bool=False):
     command = ''
     if sys.platform.startswith("linux"):
-        command = f'mv "{temp_file}" "{new_file_name}"'
+        command = f'mv "{source}" "{dest}"'
     elif sys.platform.startswith("win32"):
         command = f'powershell Move-Item {source} {dest}'
 
@@ -137,11 +137,13 @@ def simulate(files, src_ext, destructive):
 @click.option('--file-ext', help='File format to process')
 @click.option('--dry-run', is_flag=True, help='Simulate running')
 @click.option('--nondestructive', is_flag=True, help='Save the original files')
-def main(directory, file_ext='mp4', recursive=False, dry_run=False, nondestructive=False):
+def main(directory, file_ext='mp4,m4a,mkv,ts', recursive=False, dry_run=False, nondestructive=False):
     """ Compress h264 video files in a directory using libx265 codec with crf=28
     Args:
+         nondestructive: whether to convert the files nondestructively
+         dry_run: perform a dry run of the script rather than running. Helpful for checking for expected behavior
          directory: the directory to scan for video files
-         file_ext: the file extension to consider for conversion
+         file_ext: the file extensions to consider for conversion, comma delimited
          recursive: whether to search directory or all its contents
     """
 
@@ -151,10 +153,13 @@ def main(directory, file_ext='mp4', recursive=False, dry_run=False, nondestructi
     print(f"Dry run:        {dry_run}")
     print(f"Nondestructive: {nondestructive}")
 
-    if recursive:
-        video_files = [fp.absolute() for fp in Path(directory).rglob(f'*.{file_ext}')]
-    else:
-        video_files = [fp.absolute() for fp in Path(directory).glob(f'*.{file_ext}')]
+    file_exts = file_ext.split(",")
+
+    for ext in file_exts:
+        if recursive:
+            video_files = [fp.absolute() for fp in Path(directory).rglob(f'*.{ext}')] + video_files
+        else:
+            video_files = [fp.absolute() for fp in Path(directory).glob(f'*.{ext}')] + video_files
 
     check_codec_cmd = 'ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 "{fp}"'
     codecs = []
@@ -174,10 +179,11 @@ def main(directory, file_ext='mp4', recursive=False, dry_run=False, nondestructi
     else:
         click.confirm('Do you want to continue?', abort=True)
 
-    if dry_run:
-        simulate(files_to_process, file_ext, not nondestructive)
-    else:
-        convert(files_to_process, file_ext, not nondestructive)
+    for ext in file_exts:
+        if dry_run:
+            simulate(files_to_process, ext, not nondestructive)
+        else:
+            convert(files_to_process, ext, not nondestructive)
 
 
 if __name__ == '__main__':
