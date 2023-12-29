@@ -51,9 +51,11 @@ def move_file(source: str, dest: str, dry_run: bool=False):
         call(command, shell=True)
     return command
 
-def convert(files, src_ext, destructive):
+def convert(files, destructive):
     known_good = ""
-    for file in tqdm(files, desc='Converting files', unit='videos'):
+    for file_path in tqdm(files, desc='Converting files', unit='videos'):
+        file = Path(file_path)
+        src_ext = file_path.split(".")[-1]
         temp_file = file.parent / f'temp_ffmpeg.mp4'
 
         # Right now, we're relying on the user having extensions that match the container.
@@ -95,9 +97,11 @@ def convert(files, src_ext, destructive):
             else:
                 move_file(temp_file, new_file_name)
 
-def simulate(files, src_ext, destructive):
+def simulate(files, destructive):
     known_good = ""
-    for file in tqdm(files, desc='Converting files', unit='videos'):
+    for file_path in tqdm(files, desc='Converting files', unit='videos'):
+        file = Path(file_path)
+        src_ext = file_path.split(".")[-1]
         temp_file = file.parent / f'temp_ffmpeg.mp4'
 
         # Right now, we're relying on the user having extensions that match the container.
@@ -188,11 +192,10 @@ def main(directory, file_ext='mp4,m4a,mkv,ts,avi', recursive=False, dry_run=Fals
     else:
         click.confirm('Do you want to continue?', abort=True)
 
-    for ext in file_exts:
-        if dry_run:
-            simulate(files_to_process, ext, not nondestructive)
-        else:
-            convert(files_to_process, ext, not nondestructive)
+    if dry_run:
+        simulate(files_to_process, not nondestructive)
+    else:
+        convert(files_to_process, not nondestructive)
 
 if __name__ == '__main__':
     main()
