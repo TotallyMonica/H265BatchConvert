@@ -157,20 +157,19 @@ def main(directory, file_ext='mp4,m4a,mkv,ts,avi', recursive=False, dry_run=Fals
     print(f"Nondestructive: {nondestructive}")
     print(f"All Extensions: {all_exts}")
 
+    exts = find.FileExtensions(directory)
+    files = find.VideoFileIterator(directory)
+
     if all_exts:
-        file_exts=find.locate(directory)
+        file_exts=[ext for ext in tqdm(exts, desc='Getting extensions', unit='files')]
     else:
         file_exts = file_ext.split(",")
 
-    for ext in file_exts:
-        if recursive:
-            video_files = [fp.absolute() for fp in Path(directory).rglob(f'*.{ext}')] + video_files
-        else:
-            video_files = [fp.absolute() for fp in Path(directory).glob(f'*.{ext}')] + video_files
+    video_files = [file for file in tqdm(files, desc='Getting video files', unit='files')]
 
     check_codec_cmd = 'ffprobe -v error -select_streams v:0 -show_entries stream=codec_name -of default=noprint_wrappers=1:nokey=1 "{fp}"'
     codecs = []
-    for fp in tqdm(video_files, desc='Checking metadata', unit='videos'):
+    for fp in tqdm(files, desc='Checking metadata', unit='videos'):
         try:
             codecs.append(check_output(check_codec_cmd.format(fp=fp), shell=True).strip().decode('UTF-8'))
         except CalledProcessError:
@@ -179,7 +178,7 @@ def main(directory, file_ext='mp4,m4a,mkv,ts,avi', recursive=False, dry_run=Fals
     files_to_process = [fp for fp, codec in zip(video_files, codecs) if codec != 'hevc']
 
     print(f'\nTOTAL FILES FOUND ({len(video_files)})')
-    print(f'FILES TO PROCESS ({len(files_to_process)}):', [fp.name for fp in files_to_process], '\n')
+    print(f'FILES TO PROCESS ({len(files_to_process)}):', [fp for fp in files_to_process], '\n')
 
     if len(files_to_process) == 0:
         raise click.Abort
@@ -191,7 +190,6 @@ def main(directory, file_ext='mp4,m4a,mkv,ts,avi', recursive=False, dry_run=Fals
             simulate(files_to_process, ext, not nondestructive)
         else:
             convert(files_to_process, ext, not nondestructive)
-
 
 if __name__ == '__main__':
     main()
