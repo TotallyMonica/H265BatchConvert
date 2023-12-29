@@ -139,7 +139,8 @@ def simulate(files, src_ext, destructive):
 @click.option('--dry-run', is_flag=True, help='Simulate running')
 @click.option('--nondestructive', is_flag=True, help='Save the original files')
 @click.option('--all-exts', is_flag=True, help='Use all of the extensions in the provided directory')
-def main(directory, file_ext='mp4,m4a,mkv,ts,avi', recursive=False, dry_run=False, nondestructive=False, all_exts=False):
+@click.option('--trust-extensions', is_flag=True, help='Trust the file extensions')
+def main(directory, file_ext='mp4,m4a,mkv,ts,avi', recursive=False, dry_run=False, nondestructive=False, all_exts=False, trust_extensions=False):
     """ Compress h264 video files in a directory using libx265 codec with crf=28
     Args:
          nondestructive: whether to convert the files nondestructively
@@ -148,22 +149,24 @@ def main(directory, file_ext='mp4,m4a,mkv,ts,avi', recursive=False, dry_run=Fals
          file_ext: the file extensions to consider for conversion, comma delimited
          recursive: whether to search directory or all its contents
          all_exts: get all files in the directory given
+         trust_extensions: Skip detecting the type of file
     """
 
-    print(f"Directory:      {directory}")
-    print(f"File Extension: {file_ext}")
-    print(f"Recursive:      {recursive}")
-    print(f"Dry run:        {dry_run}")
-    print(f"Nondestructive: {nondestructive}")
-    print(f"All Extensions: {all_exts}")
-
-    exts = find.FileExtensions(directory)
-    files = find.VideoFileIterator(directory)
+    print(f"Directory:        {directory}")
+    print(f"File Extension:   {file_ext}")
+    print(f"Recursive:        {recursive}")
+    print(f"Dry run:          {dry_run}")
+    print(f"Nondestructive:   {nondestructive}")
+    print(f"All Extensions:   {all_exts}")
+    print(f"Trust Extensions: {trust_extensions}")
 
     if all_exts:
+        exts = find.FileExtensions(directory, recursive=recursive)
         file_exts=[ext for ext in tqdm(exts, desc='Getting extensions', unit='files')]
     else:
         file_exts = file_ext.split(",")
+
+    files = find.VideoFileIterator(directory, extensions=file_exts, trust_extensions=trust_extensions)
 
     video_files = [file for file in tqdm(files, desc='Getting video files', unit='files')]
 
