@@ -11,26 +11,30 @@ A simple python script to batch convert videos to H.265
 ## Usage:
 
 ```
-python3 convert.py <path> [--recursive] [--file-extension <extension>] [--dry-run] [--nondescructive]
+python3 convert.py <path> [--recursive] [--file-extension <extension>] [--dry-run] [--nondescructive] [--all-exts] [--trust-extensions]
 ```
 
 Defaults:
- - File extension: mp4
+ - File extensions: mp4, m4a, mkv, ts, avi
  - Not recursive
  - Not a dry run
  - Destructive
+ - Validates scanned files
 
 Equivalent command to defaults:
 
 ```
-python3 convert.py <path> --file-extension "mp4"
+python3 convert.py <path> --file-extension "mp4,m4a,mkv,ts,avi"
 ```
 
 ## To-do:
 
- - [ ] Support multiple extensions
+ - [x] ~~Support multiple extensions~~ Validated as of 12/29/2023
  - [ ] Add in support for AV1
  - [ ] Better HW acceleration support
+ - [ ] Validate Windows support
+ - [ ] Validate macOS support
+ - [ ] Ensure support on non-Nvidia GPUs
 
 ## Sources
 
