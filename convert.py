@@ -45,7 +45,7 @@ def move_file(source: str, dest: str, dry_run: bool=False):
     if sys.platform.startswith("linux"):
         command = f'mv "{source}" "{dest}"'
     elif sys.platform.startswith("win32"):
-        command = f'powershell Move-Item "{source}" "{dest}"'
+        command = f"""powershell 'Move-Item "{source}" "{dest}"'"""
 
     if command and not dry_run:
         call(command, shell=True)
