@@ -74,22 +74,22 @@ def convert(files, destructive):
 
         # Ensure the conversion succeeded
         if conversion_return_code == 0:
-            create_file(file, temp_file)
+            call(create_file(file, temp_file), shell=True)
 
             # Ultimately, extension doesn't matter if we're destructive
             if destructive:
-                delete_file(file)
-                move_file(temp_file, file)
+                call(delete_file(file), shell=True)
+                call(move_file(temp_file, file), shell=True)
 
             # We know we're not destructive, are we mp4?
             elif is_source_mp4:
                 mp4_extension = '.mp4'
                 nondestructive_extension = '_h265.mp4'
-                move_file(temp_file, f"{new_file_name.replace(mp4_extension, nondestructive_extension)}")
+                call(move_file(temp_file, f"{new_file_name.replace(mp4_extension, nondestructive_extension)}"), shell=True)
 
             # We aren't mp4 and we aren't destructive, move temporary file to final file name as MP4 extension
             else:
-                move_file(temp_file, new_file_name)
+                call(move_file(temp_file, new_file_name), shell=True)
 
 def simulate(files, destructive):
     known_good = ""
