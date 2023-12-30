@@ -31,7 +31,7 @@ def create_file(reference: str, new_file: str, dry_run: bool=False):
     if sys.platform.startswith("linux"):
         command = f'touch -r "{reference}" "{new_file}"'
     elif sys.platform.startswith("win32"):
-        command = f"""powershell -Command "(Get-ChildItem '{new_file}').CreationTime = (Get-ChildItem '{reference}').CreationTime; (Get-ChildItem '{new_file}').LastAccessTime = (Get-ChildItem '{reference}').LastAccessTime; (Get-ChildItem '{new_file}').LastWriteTime = (Get-ChildItem '{reference}').LastWriteTime'" """
+        command = f"""powershell -Command "(Get-ChildItem '{new_file}').CreationTime = (Get-ChildItem '{reference}').CreationTime; (Get-ChildItem '{new_file}').LastAccessTime = (Get-ChildItem '{reference}').LastAccessTime; (Get-ChildItem '{new_file}').LastWriteTime = (Get-ChildItem '{reference}').LastWriteTime" """
 
     return command
 
