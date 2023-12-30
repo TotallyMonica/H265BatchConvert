@@ -23,8 +23,6 @@ def delete_file(target: str, dry_run: bool=False):
     elif sys.platform.startswith("win32"):
         command = f"""powershell 'Delete-File "{target}"' """
 
-    if command and not dry_run:
-        call(command, shell=True)
     return command
 
 # OS agnostic way to create files
@@ -32,11 +30,7 @@ def create_file(reference: str, new_file: str, dry_run: bool=False):
     command = ''
     if sys.platform.startswith("linux"):
         command = f'touch -r "{reference}" "{new_file}"'
-    elif sys.platform.startswith("win32"):
-        command = f"""powershell 'New-Item f"{new_file}"; powershell (Get-ChildItem "{new_file}").CreationTime = (Get-ChildItem "{reference}").CreationTime'"""
 
-    if command and not dry_run:
-        call(command, shell=True)
     return command
 
 # OS agnostic move command
@@ -47,8 +41,6 @@ def move_file(source: str, dest: str, dry_run: bool=False):
     elif sys.platform.startswith("win32"):
         command = f"""powershell 'Move-Item "{source}" "{dest}"'"""
 
-    if command and not dry_run:
-        call(command, shell=True)
     return command
 
 def convert(files, destructive):
