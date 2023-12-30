@@ -21,7 +21,7 @@ def delete_file(target: str, dry_run: bool=False):
     if sys.platform.startswith("linux"):
         command = f'rm "{target}"'
     elif sys.platform.startswith("win32"):
-        command = f"""powershell 'Delete-File "{target}"' """
+        command = f"""powershell -Command "Delete-File '{target}'" """
 
     return command
 
@@ -30,6 +30,8 @@ def create_file(reference: str, new_file: str, dry_run: bool=False):
     command = ''
     if sys.platform.startswith("linux"):
         command = f'touch -r "{reference}" "{new_file}"'
+    elif sys.platform.startswith("win32"):
+        command = f"""powershell -Command "(Get-ChildItem '{new_file}').CreationTime = (Get-ChildItem '{reference}').CreationTime; (Get-ChildItem '{new_file}').LastAccessTime = (Get-ChildItem '{reference}').LastAccessTime; (Get-ChildItem '{new_file}').LastWriteTime = (Get-ChildItem '{reference}').LastWriteTime'" """
 
     return command
 
@@ -39,7 +41,7 @@ def move_file(source: str, dest: str, dry_run: bool=False):
     if sys.platform.startswith("linux"):
         command = f'mv "{source}" "{dest}"'
     elif sys.platform.startswith("win32"):
-        command = f"""powershell 'Move-Item "{source}" "{dest}"'"""
+        command = f"""powershell -Command "Move-Item '{source}' '{dest}'" """
 
     return command
 
