@@ -35,6 +35,9 @@ python3 convert.py <path> --file-extension "mp4,m4a,mkv,ts,avi"
  - [x] ~~Validate Windows support~~ Cautiously saying its implemented as of 12/29/2023
  - [ ] Validate macOS support
  - [ ] Ensure support on non-Nvidia GPUs
+ - [ ] Log results to CSV
+ - [ ] Profiles
+ - [ ] Add ignore list
 
 ## Sources
 
