@@ -94,9 +94,12 @@ if __name__ == "__main__":
     for ext in tqdm(exts, desc="Getting extensions", unit=" files"):
         # print(ext)
         pass
+    print(list(exts))
     for file in tqdm(files, desc="Getting files", unit=" files"):
         # print(ext)
         pass
+    print(list(files))
     for file in tqdm(video_files, desc="Getting video files", unit=" files"):
         # print(file)
         pass
+    print(list(video_files))

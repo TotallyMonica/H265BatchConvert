@@ -7,6 +7,7 @@ A simple python script to batch convert videos to H.265
  - tqdm
  - click
  - ffmpeg
+ - python-magic
 
 ## Usage:
 
