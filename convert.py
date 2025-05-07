@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import click
 from pathlib import Path
-from subprocess import call, check_output, CalledProcessError
+from subprocess import call, check_output, CalledProcessError, run
 from tqdm import tqdm
 import sys
 import find
+import json
 
 def encoders(codec: str="hevc"):
     if codec.lower() == "hevc" or codec.lower() == "h265" or codec.lower() == "h.265" or codec.lower() == "x265":
@@ -53,10 +54,29 @@ def move_file(source: str, dest: str, dry_run: bool=False):
 
     return command
 
-def convert(files, destructive):
+def convert(files, destructive, target_codec="hevc"):
     known_good = ""
+    text_subtitles = ("ssa", "ass", "hdmv_text_subtitle", "mov_text", "srt", "subrip", "dvb_teletext")
     for file_path in tqdm(files, desc='Converting files', unit='videos'):
         file = Path(file_path)
+
+        # Probe media information from source file
+        probe_cmd = ["ffprobe", "-v", "error", "-of", "json", file, "-of", "json", "-show_format", "-show_streams"]
+        probe_cmd_output = run(probe_cmd, capture_output=True)
+        video_streams = []
+        audio_streams = []
+        subtitle_streams = []
+
+        if probe_cmd_output.returncode == 0:
+            parsed_output = json.loads(probe_cmd_output.stdout)
+            for stream in parsed_output['streams']:
+                if stream['codec_type'].lower() == 'subtitle':
+                    subtitle_streams.append(stream)
+                elif stream['codec_type'].lower() == 'audio':
+                    audio_streams.append(stream)
+                elif stream['codec_type'].lower() == 'video':
+                    video_streams.append(stream)
+
         src_ext = file_path.split(".")[-1]
         temp_file = file.parent / f'temp_ffmpeg.mp4'
 
