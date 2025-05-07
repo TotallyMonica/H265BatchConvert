@@ -6,11 +6,19 @@ from tqdm import tqdm
 import sys
 import find
 
-def encoders():
-    return ("hevc_nvenc", "hevc_amf", "hevc_qsv", "hevc_vaapi", "hevc_v4l2m2m", "hevc_mf", "libx265")
+def encoders(codec: str="hevc"):
+    if codec.lower() == "hevc" or codec.lower() == "h265" or codec.lower() == "h.265" or codec.lower() == "x265":
+        return ("hevc_nvenc", "hevc_amf", "hevc_qsv", "hevc_vaapi", "hevc_v4l2m2m", "hevc_mf", "libx265")
+    elif codec.lower() == "av1":
+        return ("libsvtav1", "av1_nvenc", "av1_qsv", "av1_amf", "av1_vaapi", "libaom-av1")
+    elif codec.lower() == "h.264" or codec.lower() == "h264" or codec.lower() == "x264":
+        return ("h264_nvenc", "h264_amf", "h264_qsv", "h264_vaapi", "h264_v4l2m2m", "libx264")
 
-def decoders():
-    return ("hevc_cuvid", "hevc_qsv", "hevc_v4l2m2m", "hevc")
+def decoders(codec: str="hevc"):
+    if codec.lower() == "hevc" or codec.lower() == "h265" or codec.lower() == "h.265":
+        return ("hevc_cuvid", "hevc_qsv", "hevc_v4l2m2m", "hevc")
+    elif codec.lower() == "av1":
+        return ("libaom-av1", "av1_cuvid", "av1_qsv", "av1", "libdav1d")
 
 def check_dependencies():
     dependencies = ("ffmpeg", "ffprobe")
