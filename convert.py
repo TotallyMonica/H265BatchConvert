@@ -114,7 +114,7 @@ def convert(files, destructive, target_codec="hevc"):
             # We know we're not destructive, are we mp4?
             elif is_source_mp4:
                 mp4_extension = '.mp4'
-                nondestructive_extension = '_h265.mp4'
+                nondestructive_extension = f'_{target_codec}.mp4'
                 call(move_file(temp_file, f"{new_file_name.replace(mp4_extension, nondestructive_extension)}"), shell=True)
 
             # We aren't mp4 and we aren't destructive, move temporary file to final file name as MP4 extension
