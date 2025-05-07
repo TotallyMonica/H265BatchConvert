@@ -121,7 +121,7 @@ def convert(files, destructive, target_codec="hevc"):
             else:
                 call(move_file(temp_file, new_file_name), shell=True)
 
-def simulate(files, destructive):
+def simulate(files, destructive, target_codec="hevc"):
     known_good = ""
     for file_path in tqdm(files, desc='Converting files', unit='videos'):
         file = Path(file_path)
@@ -137,12 +137,12 @@ def simulate(files, destructive):
             new_file_name = str(file)
 
         if known_good:
-            convert_cmd = f'ffmpeg -i "{file}" -map_metadata 0 -vcodec {known_good} "{temp_file}"'
+            convert_cmd = f'ffmpeg -i "{file}" -map 0 -vcodec {known_good} -acodec copy -map_metadata 0 -strict -2 "{temp_file}"'
             print(convert_cmd)
             create_file(file, temp_file, dry_run=True)
         else:
-            for codec in encoders():
-                convert_cmd = f'ffmpeg -i "{file}" -map_metadata 0 -vcodec {codec} "{temp_file}"'
+            for codec in encoders(target_codec):
+                convert_cmd = f'ffmpeg -i "{file}" -map 0 -vcodec {codec} -acodec copy -map_metadata 0 -strict -2 "{temp_file}"'
                 print(convert_cmd)
 
         # Ultimately, extension doesn't matter if we're destructive
@@ -168,8 +168,9 @@ def simulate(files, destructive):
 @click.option('--nondestructive', is_flag=True, help='Save the original files')
 @click.option('--all-exts', is_flag=True, help='Use all of the extensions in the provided directory')
 @click.option('--trust-extensions', is_flag=True, help='Trust the file extensions')
-def main(directory, file_ext='mp4,m4a,mkv,ts,avi', recursive=False, dry_run=False, nondestructive=False, all_exts=False, trust_extensions=False):
-    """ Compress h264 video files in a directory using libx265 codec with crf=28
+@click.option('--target-codec', default='hevc', help="Use a specific codec (default: hevc)")
+def main(directory, file_ext='mp4,m4a,mkv,ts,avi', recursive=False, dry_run=False, nondestructive=False, all_exts=False, trust_extensions=False, target_codec="hevc"):
+    """ Compress h264 video files in a directory using libx265 codec with crf=24
     Args:
          nondestructive: whether to convert the files nondestructively
          dry_run: perform a dry run of the script rather than running. Helpful for checking for expected behavior
@@ -178,6 +179,7 @@ def main(directory, file_ext='mp4,m4a,mkv,ts,avi', recursive=False, dry_run=Fals
          recursive: whether to search directory or all its contents
          all_exts: get all files in the directory given
          trust_extensions: Skip detecting the type of file
+         codec: Specify codec to use (default: hevc)
     """
 
     print(f"Directory:        {directory}")
@@ -187,6 +189,7 @@ def main(directory, file_ext='mp4,m4a,mkv,ts,avi', recursive=False, dry_run=Fals
     print(f"Nondestructive:   {nondestructive}")
     print(f"All Extensions:   {all_exts}")
     print(f"Trust Extensions: {trust_extensions}")
+    print(f"Target Codec:     {target_codec}")
 
     if all_exts:
         exts = find.FileExtensions(directory, recursive=recursive)
@@ -206,7 +209,9 @@ def main(directory, file_ext='mp4,m4a,mkv,ts,avi', recursive=False, dry_run=Fals
         except CalledProcessError:
             pass
 
-    files_to_process = [fp for fp, codec in zip(video_files, codecs) if codec != 'hevc']
+    print(codecs)
+    print(video_files)
+    files_to_process = [fp for fp, codec in zip(video_files, codecs) if codec != target_codec.lower()]
 
     print(f'\nTOTAL FILES FOUND ({len(video_files)})')
     print(f'FILES TO PROCESS ({len(files_to_process)}):', [fp for fp in files_to_process], '\n')
@@ -217,9 +222,9 @@ def main(directory, file_ext='mp4,m4a,mkv,ts,avi', recursive=False, dry_run=Fals
         click.confirm('Do you want to continue?', abort=True)
 
     if dry_run:
-        simulate(files_to_process, not nondestructive)
+        simulate(files_to_process, not nondestructive, target_codec)
     else:
-        convert(files_to_process, not nondestructive)
+        convert(files_to_process, not nondestructive, target_codec)
 
 if __name__ == '__main__':
     main()
