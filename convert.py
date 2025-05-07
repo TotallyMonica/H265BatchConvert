@@ -89,12 +89,14 @@ def convert(files, destructive, target_codec="hevc"):
             new_file_name = str(file)
 
         if known_good:
-            convert_cmd = f'ffmpeg -i "{file}" -map_metadata 0 -vcodec {known_good} "{temp_file}"'
-            conversion_return_code = call(convert_cmd, shell=True)
+            convert_cmd = ['ffmpeg', '-i', file, '-map', '0', '-vcodec', known_good, '-acodec', 'copy', '-map_metadata', '0', '-strict', '-2', temp_file]
+
+            conversion_return_code = run(convert_cmd, shell=True)
         else:
-            for codec in encoders():
-                convert_cmd = f'ffmpeg -i "{file}" -map_metadata 0 -vcodec {codec} "{temp_file}"'
-                conversion_return_code = call(convert_cmd, shell=True)
+            for codec in encoders(target_codec):
+                convert_cmd = ['ffmpeg', '-i', file, '-map', '0', '-vcodec', codec, '-acodec', 'copy', '-map_metadata', '0', '-strict', '-2', temp_file]
+
+                conversion_return_code = run(convert_cmd, shell=True)
 
                 if conversion_return_code == 0:
                     known_good = codec
