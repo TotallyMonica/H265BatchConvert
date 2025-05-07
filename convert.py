@@ -89,21 +89,21 @@ def convert(files, destructive, target_codec="hevc"):
             new_file_name = str(file)
 
         if known_good:
-            convert_cmd = ['ffmpeg', '-i', file, '-map', '0', '-vcodec', known_good, '-acodec', 'copy', '-map_metadata', '0', '-strict', '-2', temp_file]
+            convert_cmd = ['ffmpeg', '-i', file, '-vcodec', known_good, '-acodec', 'copy', '-map_metadata', '0', '-strict', '-2', temp_file]
 
-            conversion_return_code = run(convert_cmd, shell=True)
+            conversion_return_code = run(convert_cmd, capture_output=True)
         else:
             for codec in encoders(target_codec):
-                convert_cmd = ['ffmpeg', '-i', file, '-map', '0', '-vcodec', codec, '-acodec', 'copy', '-map_metadata', '0', '-strict', '-2', temp_file]
+                convert_cmd = ['ffmpeg', '-i', file, '-vcodec', codec, '-acodec', 'copy', '-map_metadata', '0', '-strict', '-2', temp_file]
 
-                conversion_return_code = run(convert_cmd, shell=True)
+                conversion_return_code = run(convert_cmd, capture_output=True)
 
-                if conversion_return_code == 0:
+                if conversion_return_code.returncode == 0:
                     known_good = codec
                     break
 
         # Ensure the conversion succeeded
-        if conversion_return_code == 0:
+        if conversion_return_code.returncode == 0:
             call(create_file(file, temp_file), shell=True)
 
             # Ultimately, extension doesn't matter if we're destructive
